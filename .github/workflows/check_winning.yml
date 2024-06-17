@@ -1,27 +1,33 @@
-name: Check Winning
+name: Check winning
+
 on:
-  schedule:
-    - cron: 0 13 * * 6 # every Saturday on 10:00 PM (KST)
   workflow_dispatch:
+  schedule:
+    - cron: 0 13 * * 6  # Every Saturday at 10:00 PM (KST)
 
 jobs:
-  build:
-    runs-on: [ubuntu-latest]
-    name: Check Winning
-    steps:  
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      - uses: actions/checkout@v3    
-      - uses: actions/setup-python@v4
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-          cache: 'pip' # caching pip dependencies
-      - run: pip install -r requirements.txt
 
-      - name: Run Scripts
-        run: make check
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run Python scripts
         env:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
           COUNT: ${{ secrets.COUNT }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           DISCORD_WEBHOOK_URL:  ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          make check
+
+      - uses: gautamkrishnar/keepalive-workflow@v2
