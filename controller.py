@@ -50,7 +50,7 @@ def check():
 
     username = os.environ.get('USERNAME')
     password = os.environ.get('PASSWORD')
-    discord_webhook_url = os.environ.get('DISCORD_WEBHOOK_URL')
+    discord_webhook_url = os.environ.get('CHECK_WEBHOOK_URL')
 
     globalAuthCtrl = auth.AuthController()
     globalAuthCtrl.login(username, password)
@@ -67,7 +67,7 @@ def buy():
     username = os.environ.get('USERNAME')
     password = os.environ.get('PASSWORD')
     count = int(os.environ.get('COUNT'))
-    discord_webhook_url = os.environ.get('DISCORD_WEBHOOK_URL')
+    discord_webhook_url = os.environ.get('BUY_WEBHOOK_URL')
     mode = "AUTO"
 
     globalAuthCtrl = auth.AuthController()
