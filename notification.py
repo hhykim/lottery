@@ -11,7 +11,7 @@ class Notification:
             return
 
         lotto_number_str = self.make_lotto_number_message(result["arrGameChoiceNum"])
-        message = f"{result['buyRound']}회 로또 구매 :moneybag: 잔액: {body['balance']}\n```{lotto_number_str}```"
+        message = f"{result['buyRound']}회 로또 구매 :moneybag: 잔액: {body['balance']}원\n```{lotto_number_str}```"
         self._send_discord_webhook(webhook_url, message)
 
     def make_lotto_number_message(self, lotto_number: list) -> str:
@@ -37,7 +37,7 @@ class Notification:
         win720_round = body.get("resultMsg").split("|")[3]
 
         win720_number_str = self.make_win720_number_message(body.get("saleTicket"))
-        message = f"{win720_round}회 연금복권 구매 :moneybag: 잔액: {body['balance']}\n```{win720_number_str}```"
+        message = f"{win720_round}회 연금복권 구매 :moneybag: 잔액: {body['balance']}원\n```{win720_number_str}```"
 
     def make_win720_number_message(self, win720_number: str) -> str:
         return "\n".join(win720_number.split(","))
@@ -49,10 +49,11 @@ class Notification:
         try: 
             round = winning["round"]
             money = winning["money"]
-            message = f"로또 *{winning['round']}회* - *{winning['money']}* 당첨 :tada:"
+            message = f"로또 __***{winning['round']}회***__ - __***{winning['money']}***__ 당첨 :tada:"
             self._send_discord_webhook(webhook_url, message)
         except KeyError:
-            return
+            message = ":money_with_wings: 당첨 내역이 없습니다."
+            self._send_discord_webhook(webhook_url, message)
 
     def send_win720_winning_message(self, winning: dict, webhook_url: str) -> None: 
         assert type(winning) == dict
@@ -61,7 +62,7 @@ class Notification:
         try: 
             round = winning["round"]
             money = winning["money"]
-            message = f"연금복권 *{winning['round']}회* - *{winning['money']}* 당첨 :tada:"
+            message = f"연금복권 __***{winning['round']}회***__ - __***{winning['money']}***__ 당첨 :tada:"
             self._send_discord_webhook(webhook_url, message)
         except KeyError:
             return
