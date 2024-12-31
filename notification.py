@@ -38,6 +38,7 @@ class Notification:
 
         win720_number_str = self.make_win720_number_message(body.get("saleTicket"))
         message = f"{win720_round}회 연금복권 구매 :moneybag: 잔액: {body['balance']}원\n```{win720_number_str}```"
+        self._send_discord_webhook(webhook_url, message)
 
     def make_win720_number_message(self, win720_number: str) -> str:
         return "\n".join(win720_number.split(","))
