@@ -1,8 +1,6 @@
 import requests
 
-                    
-class Notification: 
-
+class Notification:
     def send_lotto_buying_message(self, body: dict, webhook_url: str) -> None:
         assert type(webhook_url) == str
 
