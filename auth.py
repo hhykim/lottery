@@ -1,4 +1,5 @@
 import copy
+import datetime
 import requests
 import json
 import base64
@@ -15,10 +16,10 @@ class AuthController:
         "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
         "sec-ch-ua-mobile": "?0",
         "Upgrade-Insecure-Requests": "1",
-        "Origin": "https://dhlottery.co.kr",
+        "Origin": "https://www.dhlottery.co.kr",
         "Content-Type": "application/x-www-form-urlencoded",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-        "Referer": "https://dhlottery.co.kr/",
+        "Referer": "https://www.dhlottery.co.kr/",
         "Sec-Fetch-Site": "same-site",
         "Sec-Fetch-Mode": "navigate",
         "Sec-Fetch-User": "?1",
@@ -35,8 +36,8 @@ class AuthController:
         assert type(user_id) == str
         assert type(password) == str
 
-        self.http_client.get("https://dhlottery.co.kr/")
-        self.http_client.get("https://dhlottery.co.kr/user.do?method=login")
+        self.http_client.get("https://www.dhlottery.co.kr/", headers=self._REQ_HEADERS)
+        self.http_client.get("https://www.dhlottery.co.kr/user.do?method=login", headers=self._REQ_HEADERS)
 
         modulus, exponent = self._get_rsa_key()
 
@@ -45,23 +46,23 @@ class AuthController:
 
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Origin": "https://dhlottery.co.kr",
-            "Referer": "https://dhlottery.co.kr/user.do?method=login"
+            "Origin": "https://www.dhlottery.co.kr",
+            "Referer": "https://www.dhlottery.co.kr/user.do?method=login"
         }
         headers.update(self._REQ_HEADERS)
-        
+
         headers["Content-Type"] = "application/x-www-form-urlencoded"
-        headers["Origin"] = "https://dhlottery.co.kr"
-        headers["Referer"] = "https://dhlottery.co.kr/user.do?method=login"
-        
+        headers["Origin"] = "https://www.dhlottery.co.kr"
+        headers["Referer"] = "https://www.dhlottery.co.kr/user.do?method=login"
+
         data = {
             "userId": enc_user_id,
-            "userPswdEncn": enc_password, 
+            "userPswdEncn": enc_password,
             "inpUserId": user_id
         }
 
         self._try_login(headers, data)
-        
+
     def add_auth_cred_to_headers(self, headers: dict) -> str:
         assert type(headers) == dict
 
@@ -70,7 +71,7 @@ class AuthController:
 
     def _get_default_auth_cred(self):
         res = self.http_client.get(
-            "https://dhlottery.co.kr/common.do?method=main"
+            "https://www.dhlottery.co.kr/common.do?method=main"
         )
         return self._get_j_session_id_from_response(res)
 
@@ -79,35 +80,35 @@ class AuthController:
         headers.update({
             "Accept": "application/json",
             "X-Requested-With": "XMLHttpRequest",
-            "Referer": "https://dhlottery.co.kr/user.do?method=login"
+            "Referer": "https://www.dhlottery.co.kr/user.do?method=login"
         })
         headers.pop("Upgrade-Insecure-Requests", None)
 
         res = self.http_client.get(
-            "https://dhlottery.co.kr/login/selectRsaModulus.do",
+            "https://www.dhlottery.co.kr/login/selectRsaModulus.do",
             headers=headers
         )
-        
+
         try:
             data = res.json()
         except:
-             raise ValueError(f"Failed to parse JSON. St: {res.status_code}")
-        
+            raise ValueError(f"Failed to parse JSON. St: {res.status_code}")
+
         if "data" in data and "rsaModulus" in data["data"]:
             modulus = data["data"]["rsaModulus"]
             exponent = data["data"]["publicExponent"]
             return modulus, exponent
-        
+
         if "rsaModulus" in data:
             return data["rsaModulus"], data["publicExponent"]
-            
+
         raise KeyError("rsaModulus not found")
 
     def _rsa_encrypt(self, text, modulus, exponent):
         key_spec = RSA.construct((int(modulus, 16), int(exponent, 16)))
         cipher = PKCS1_v1_5.new(key_spec)
-        ciphertext = cipher.encrypt(text.encode('utf-8'))
-        return binascii.hexlify(ciphertext).decode('utf-8')
+        ciphertext = cipher.encrypt(text.encode("utf-8"))
+        return binascii.hexlify(ciphertext).decode("utf-8")
 
     def _get_j_session_id_from_response(self, res: requests.Response):
         assert type(res) == requests.Response
@@ -115,16 +116,16 @@ class AuthController:
         for cookie in res.cookies:
             if cookie.name == "JSESSIONID":
                 return cookie.value
-        
-        if self.http_client.session.cookies.get("JSESSIONID"):
-             return self.http_client.session.cookies.get("JSESSIONID")
-             
-        if self.http_client.session.cookies.get("DHJSESSIONID"):
-             return self.http_client.session.cookies.get("DHJSESSIONID")
 
-        if self._AUTH_CRED: 
+        if self.http_client.session.cookies.get("JSESSIONID"):
+            return self.http_client.session.cookies.get("JSESSIONID")
+
+        if self.http_client.session.cookies.get("DHJSESSIONID"):
+            return self.http_client.session.cookies.get("DHJSESSIONID")
+
+        if self._AUTH_CRED:
             return self._AUTH_CRED
-        
+
         if self.http_client.session.cookies.get("WMONID"):
             return self.http_client.session.cookies.get("WMONID")
 
@@ -136,20 +137,81 @@ class AuthController:
     def _try_login(self, headers: dict, data: dict):
         assert type(headers) == dict
         assert type(data) == dict
-        
 
         res = self.http_client.post(
-            "https://dhlottery.co.kr/login/securityLoginCheck.do",
+            "https://www.dhlottery.co.kr/login/securityLoginCheck.do",
             headers=headers,
             data=data,
         )
-        
+
         new_jsessionid = self._get_j_session_id_from_response(res)
         if new_jsessionid:
-             self._update_auth_cred(new_jsessionid)
+            self._update_auth_cred(new_jsessionid)
+
+        try:
+            self.http_client.get("https://www.dhlottery.co.kr/main", headers=self._REQ_HEADERS)
+        except Exception:
+            pass
 
         return res
 
     def _update_auth_cred(self, j_session_id: str) -> None:
         assert type(j_session_id) == str
         self._AUTH_CRED = j_session_id
+
+    def get_current_session_id(self) -> str:
+        for cookie in self.http_client.session.cookies:
+            if cookie.name == "JSESSIONID":
+                return cookie.value
+
+        for cookie in self.http_client.session.cookies:
+            if cookie.name == "DHJSESSIONID":
+                return cookie.value
+
+        if self._AUTH_CRED:
+            return self._AUTH_CRED
+
+    def get_user_balance(self) -> str:
+        try:
+            try:
+                self.http_client.get("https://www.dhlottery.co.kr/mypage/home")
+            except:
+                pass
+
+            timestamp = int(datetime.datetime.now().timestamp() * 1000)
+            url = f"https://www.dhlottery.co.kr/mypage/selectUserMndp.do?_={timestamp}"
+
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+                "Referer": "https://www.dhlottery.co.kr/mypage/home",
+                "X-Requested-With": "XMLHttpRequest",
+                "Content-Type": "application/json;charset=UTF-8",
+                "Accept": "application/json, text/javascript, */*; q=0.01",
+                "requestMenuUri": "/mypage/home",
+                "AJAX": "true",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin",
+                "Sec-Fetch-Dest": "empty"
+            }
+
+            res = self.http_client.get(url, headers=headers)
+
+            txt = res.text.strip()
+            if txt.startswith("<"):
+                raise
+
+            data = json.loads(txt)
+
+            if "data" in data and isinstance(data["data"], dict):
+                data = data["data"]
+
+            if "userMndp" in data:
+                data = data["userMndp"]
+
+            if "totalAmt" in data:
+                val = str(data["totalAmt"]).replace(",", "")
+                return f"{int(val):,}원"
+
+            return "0원"
+        except:
+            return "확인 불가"

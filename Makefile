@@ -1,7 +1,7 @@
-install: 
+install:
 	pip3 install -r requirements.txt
 
-buy: 
+buy:
 	python3 controller.py buy
 
 check:
