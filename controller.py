@@ -76,6 +76,7 @@ def send_message(mode: int, lottery_type: int, response: dict, webhook_url: str)
 
 def check():
     auth_ctrl, _, webhook_url = _setup_and_login()
+    webhook_url = os.environ.get('CHECK_WEBHOOK_URL')
 
     response = check_winning_lotto645(auth_ctrl)
     send_message(0, 0, response=response, webhook_url=webhook_url)
@@ -91,6 +92,7 @@ def buy():
     mode = "AUTO"
 
     auth_ctrl, username, webhook_url = _setup_and_login()
+    webhook_url = os.environ.get('BUY_WEBHOOK_URL')
 
     response = buy_lotto645(auth_ctrl, count, mode) 
     send_message(1, 0, response=response, webhook_url=webhook_url)
@@ -107,6 +109,7 @@ def lotto_buy():
     load_dotenv(override=True)
     count = int(os.environ.get('COUNT'))
     auth_ctrl, _, discord_webhook_url = _setup_and_login()
+    discord_webhook_url = os.environ.get('BUY_WEBHOOK_URL')
     mode = "AUTO"
     
     response = buy_lotto645(auth_ctrl, count, mode)
@@ -114,18 +117,21 @@ def lotto_buy():
 
 def win720_buy():
     auth_ctrl, username, discord_webhook_url = _setup_and_login()
+    discord_webhook_url = os.environ.get('BUY_WEBHOOK_URL')
 
     response = buy_win720(auth_ctrl, username)
     send_message(1, 1, response=response, webhook_url=discord_webhook_url)
 
 def lotto_check():
     auth_ctrl, _, discord_webhook_url = _setup_and_login()
+    discord_webhook_url = os.environ.get('CHECK_WEBHOOK_URL')
 
     response = check_winning_lotto645(auth_ctrl)
     send_message(0, 0, response=response, webhook_url=discord_webhook_url)
 
 def win720_check():
     auth_ctrl, _, discord_webhook_url = _setup_and_login()
+    discord_webhook_url = os.environ.get('CHECK_WEBHOOK_URL')
 
     response = check_winning_win720(auth_ctrl)
     send_message(0, 1, response=response, webhook_url=discord_webhook_url)

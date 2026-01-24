@@ -301,9 +301,9 @@ class Win720:
                         
                         try:
                             val = int(money_raw)
-                            money = f"{val:,} 원"
+                            money = f"{val:,}원"
                         except (ValueError, TypeError):
-                            money = "0 원"
+                            money = "0원"
                             
                         result_data = {
                             "round": round_no,
