@@ -29,6 +29,6 @@ jobs:
           COUNT: ${{ secrets.COUNT }}
           CHECK_WEBHOOK_URL:  ${{ secrets.CHECK_WEBHOOK_URL }}
         run: |
-          make check_lotto
+          if ! make check_lotto; then sleep 10 && make check_lotto; fi
 
       - uses: liskin/gh-workflow-keepalive@v1
