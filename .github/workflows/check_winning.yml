@@ -7,7 +7,7 @@ on:
 
 jobs:
   check:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
@@ -29,6 +29,6 @@ jobs:
           COUNT: ${{ secrets.COUNT }}
           CHECK_WEBHOOK_URL:  ${{ secrets.CHECK_WEBHOOK_URL }}
         run: |
-          if ! make check_lotto; then sleep 10 && make check_lotto; fi
+          make check_lotto
 
       - uses: liskin/gh-workflow-keepalive@v1

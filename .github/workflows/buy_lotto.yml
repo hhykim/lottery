@@ -3,11 +3,11 @@ name: Buy lotto
 on:
   workflow_dispatch:
   schedule:
-    - cron: 0 9 * * 1  # Every Monday at 06:00 PM (KST)
+    - cron: 0 8 * * 1  # Every Monday at 05:00 PM (KST)
 
 jobs:
   buy:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
@@ -29,6 +29,6 @@ jobs:
           COUNT: ${{ secrets.COUNT }}
           BUY_WEBHOOK_URL:  ${{ secrets.BUY_WEBHOOK_URL }}
         run: |
-          if ! make buy_lotto; then sleep 10 && make buy_lotto; fi
+          make buy_lotto
 
       - uses: liskin/gh-workflow-keepalive@v1
